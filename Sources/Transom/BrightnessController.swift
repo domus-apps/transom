@@ -1,13 +1,13 @@
 import AppKit
 
-/* Sets per-display brightness through the private DisplayServices framework
-   — the same backend System Settings and Control Center use. It covers the
-   built-in panel and Apple/brightness-capable external displays (Studio
-   Display, Pro Display XDR, many recent LG UltraFines).
+/* Sets per-display brightness. Two backends, tried in order:
 
-   Non-Apple external monitors need DDC/CI instead (IOAVService on Apple
-   silicon), which is the next milestone — `canControl` returns false for
-   them so the key event falls through to the system default.
+   1. The private DisplayServices framework — the same backend System
+      Settings and Control Center use. Covers the built-in panel and
+      Apple/brightness-capable external displays (Studio Display, Pro
+      Display XDR, many recent LG UltraFines).
+   2. DDC/CI over IOAVService (DDCBrightness) — everything else: ordinary
+      external monitors that DisplayServices reports as uncontrollable.
 
    Everything is resolved with dlopen/dlsym at runtime: there is no public
    header, and a missing symbol must degrade to "can't control" rather than
@@ -45,7 +45,23 @@ final class BrightnessController {
         }
     }
 
+    private let ddc = DDCBrightness()
+
     func canControl(_ display: CGDirectDisplayID) -> Bool {
+        canControlViaDisplayServices(display) || ddc.canControl(display)
+    }
+
+    /* One tick up or down on the given display. Returns the new value, or
+       nil if the display couldn't be read/written. */
+    @discardableResult
+    func step(_ display: CGDirectDisplayID, delta: Int, fine: Bool) -> Float? {
+        if let next = stepViaDisplayServices(display, delta: delta, fine: fine) {
+            return next
+        }
+        return ddc.step(display, delta: delta, fine: fine)
+    }
+
+    private func canControlViaDisplayServices(_ display: CGDirectDisplayID) -> Bool {
         guard let canChangeBrightness, let getBrightness, setBrightness != nil else {
             return false
         }
@@ -54,10 +70,9 @@ final class BrightnessController {
         return getBrightness(display, &value) == 0
     }
 
-    /* One tick up or down on the given display. Returns the new value, or
-       nil if the display couldn't be read/written. */
-    @discardableResult
-    func step(_ display: CGDirectDisplayID, delta: Int, fine: Bool) -> Float? {
+    private func stepViaDisplayServices(
+        _ display: CGDirectDisplayID, delta: Int, fine: Bool
+    ) -> Float? {
         guard let getBrightness, let setBrightness else { return nil }
         var current: Float = 0
         guard getBrightness(display, &current) == 0 else { return nil }

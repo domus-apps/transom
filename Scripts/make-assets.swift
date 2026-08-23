@@ -457,33 +457,34 @@ func drawSocialPreview(_ cg: CGContext, icon: CGImage) {
         text.draw(at: NSPoint(x: canvas.midX - text.size().width / 2, y: y))
     }
 
-    // Centered stack: icon, wordmark, tagline, brightness keycaps
-    cg.draw(icon, in: CGRect(x: canvas.midX - 110, y: 350, width: 220, height: 220))
+    // Centered stack: icon, wordmark, tagline, brightness keycaps — sized up
+    // so the card stays legible at the small sizes link previews render at.
+    cg.draw(icon, in: CGRect(x: canvas.midX - 125, y: 355, width: 250, height: 250))
 
     drawCentered(
         NSAttributedString(string: "Transom", attributes: [
-            .font: NSFont.systemFont(ofSize: 88, weight: .bold),
+            .font: NSFont.systemFont(ofSize: 100, weight: .bold),
             .foregroundColor: NSColor.white,
-        ]), y: 230)
+        ]), y: 238)
 
     drawCentered(
         NSAttributedString(string: tagline, attributes: [
-            .font: NSFont.systemFont(ofSize: 32, weight: .medium),
+            .font: NSFont.systemFont(ofSize: 38, weight: .medium),
             .foregroundColor: taglineColor,
-        ]), y: 172)
+        ]), y: 176)
 
     let pills: [(label: String, sun: PillSunStyle?)] = [
         ("F1", .dim), ("F2", .bright), ("⌥⇧  fine", nil),
     ]
     let gap: CGFloat = 16
     let widths = pills.map {
-        sunPillWidth(label: $0.label, fontSize: 26, sunScale: 1, sun: $0.sun)
+        sunPillWidth(label: $0.label, fontSize: 30, sunScale: 1.15, sun: $0.sun)
     }
     var x = canvas.midX - (widths.reduce(0, +) + gap * CGFloat(pills.count - 1)) / 2
     for (pill, width) in zip(pills, widths) {
         drawSunPill(
-            cg, x: x, y: 78, height: 56, label: pill.label,
-            fontSize: 26, sunScale: 1, sun: pill.sun)
+            cg, x: x, y: 82, height: 62, label: pill.label,
+            fontSize: 30, sunScale: 1.15, sun: pill.sun)
         x += width + gap
     }
 }
@@ -518,10 +519,9 @@ let banner = makeBitmap(1800, 600)
 withContext(banner) { drawBanner($0, icon: bannerIcon) }
 savePNG(banner, "Assets/banner.png")
 
-// GitHub social preview: 2:1 aspect, rendered @2x for retina crispness.
-let og = makeBitmap(2560, 1280)
+// GitHub social preview: exactly 1280x640, GitHub's recommended size.
+let og = makeBitmap(1280, 640)
 withContext(og) { cg in
-    cg.scaleBy(x: 2, y: 2)
     drawSocialPreview(cg, icon: bannerIcon)
 }
 savePNG(og, "Assets/og-image.png")

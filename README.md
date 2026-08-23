@@ -18,14 +18,18 @@ How a key press is handled:
 1. Brightness keys arrive as `NX_SYSDEFINED` system events; a CGEventTap intercepts them
    before macOS acts (this is why the Accessibility permission is required).
 2. The display under `NSEvent.mouseLocation` is resolved to a `CGDirectDisplayID`.
-3. Brightness is stepped through the private `DisplayServices` framework — the same backend
-   System Settings uses — in the native granularity (1/16, or 1/64 with ⌥⇧ held).
+3. Brightness is stepped in the native granularity (1/16, or 1/64 with ⌥⇧ held) through the
+   first backend that can control the display:
+   - the private `DisplayServices` framework — the same backend System Settings uses — for
+     Apple-class displays (Studio Display, Pro Display XDR, many recent LG UltraFines), or
+   - **DDC/CI** over `IOAVService` for everything else (Dell, BenQ, … — ordinary external
+     monitors), the same channel the monitor's own OSD menu uses.
 
 The event **passes through untouched** (native behavior, including the on-screen HUD) when:
 
 - the cursor is on the built-in display — keeps the native OSD and ambient-light integration, or
-- the display can't be controlled via DisplayServices (typically non-Apple external monitors,
-  which need DDC/CI — see Roadmap).
+- neither backend can control the display (a TV or hub that doesn't answer DDC), so the keys
+  never go dead.
 
 ## Settings
 
@@ -78,13 +82,17 @@ swift run                    # run once
 ### Manual test checklist
 
 1. `swift run` → the menu bar icon (sun) appears.
-2. Move the cursor to an external Apple/brightness-capable display and press F1/F2 — that
-   display's brightness changes; the built-in panel's does not.
+2. Move the cursor to an external display and press F1/F2 — that display's brightness changes
+   (via DisplayServices for Apple-class displays, DDC/CI for the rest); the built-in panel's
+   does not.
 3. Move the cursor to the built-in display and press F1/F2 — native behavior, including the
    on-screen brightness HUD.
 4. Hold ⌥⇧ with F1/F2 — quarter-size fine steps.
 5. Hold F2 down — autorepeat ramps the brightness smoothly.
-6. Check Control Center → Display — its slider tracks Transom's changes.
+6. Check Control Center → Display — its slider tracks Transom's changes (Apple-class displays
+   only; DDC monitors have no system slider).
+7. Change a DDC monitor's brightness from its physical buttons, wait ~10s, then press F1/F2 —
+   Transom picks up from the new value instead of snapping back.
 
 ### Unit tests
 
@@ -92,10 +100,11 @@ swift run                    # run once
 ./Scripts/test.sh   # equivalent to `swift test`
 ```
 
-The cursor→display resolution (`CursorDisplay.index`) and the brightness stepping
-(`BrightnessMath.stepped`) are pure functions, covered in `Tests/TransomTests/`: containment,
-shared-edge tie-breaking, off-screen fallback, grid snapping, clamping, and drift-free
-round trips. Swift Testing needs full Xcode — Command Line Tools alone won't run it.
+The cursor→display resolution (`CursorDisplay.index`), the brightness stepping
+(`BrightnessMath.stepped`), and the DDC/CI packet framing (`DDCPacket`) are pure functions,
+covered in `Tests/TransomTests/`: containment, shared-edge tie-breaking, off-screen fallback,
+grid snapping, clamping, drift-free round trips, and wire-format packets verified against
+bytes captured from real hardware. Swift Testing needs full Xcode — Command Line Tools alone won't run it.
 
 ## Code structure
 
@@ -107,6 +116,8 @@ Sources/Transom/
 ├── CursorDisplay.swift        # Cursor → CGDirectDisplayID resolution (the pure math)
 ├── BrightnessMath.swift       # Grid-snapped brightness stepping (pure, testable)
 ├── BrightnessController.swift # DisplayServices (private framework) get/set via dlopen
+├── DDCPacket.swift            # DDC/CI packet framing + checksums (pure, testable)
+├── DDCBrightness.swift        # DDC/CI over IOAVService for non-Apple external monitors
 ├── AppPreferences.swift       # App-level preferences (hide menu bar icon)
 └── SettingsWindow.swift       # Sidebar settings window
 ```
@@ -115,8 +126,9 @@ Recommended reading order: `BrightnessKeyTap.swift` → `AppDelegate.handleBrigh
 
 ## Roadmap
 
-- **DDC/CI for non-Apple external monitors** (`IOAVService` on Apple silicon) — today those
-  displays fall through to the system default instead of going dead.
+- **DDC/CI on Intel Macs** (`IOFramebuffer` I2C) — the current DDC path uses `IOAVService`,
+  which only exists on Apple silicon; on Intel those displays fall through to the system
+  default instead of going dead.
 - **On-screen brightness HUD** for redirected key presses (the native OSD only appears for
   pass-through events).
 - **Release workflow** (GitHub Actions signing + notarization, same shape as Oriel's).
