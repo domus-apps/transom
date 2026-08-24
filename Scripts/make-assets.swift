@@ -166,8 +166,8 @@ func drawGlassPane(
 // The glyph: two displays — a dim ghost pane behind, the display under the
 // cursor arrived bright in front, carrying the sun. Same composition as
 // Oriel's two window panes, so the apps read as siblings side by side.
-let backPane = CGRect(x: 190, y: 460, width: 420, height: 330)
-let frontPane = CGRect(x: 380, y: 230, width: 440, height: 340)
+let backPane = CGRect(x: 220, y: 430, width: 420, height: 330)
+let frontPane = CGRect(x: 350, y: 260, width: 440, height: 340)
 
 func drawBackPane(_ cg: CGContext, backdrop: CGImage, boost: Bool) {
     drawGlassPane(
