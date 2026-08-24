@@ -23,7 +23,7 @@ final class BrightnessHUD {
     private static let topMargin: CGFloat = 8
     private static let holdDuration: TimeInterval = 1.4
     private static let fadeDuration: TimeInterval = 0.5
-    private static let entranceDuration: TimeInterval = 0.3
+    private static let entranceDuration: TimeInterval = 0.45
     private static let entranceScale: CGFloat = 0.85
 
     private var panel: NSPanel?
@@ -111,8 +111,13 @@ final class BrightnessHUD {
         }
     }
 
-    /* The native indicator pops in: a quick fade riding a slightly springy
-       scale-up from the pill's center. */
+    /* The entrance: a fade riding a scale-up from the pill's center. A
+       strongly decelerating cubic (easeOutQuint-like) — fast enough off the
+       mark that autorepeat doesn't feel laggy, gliding to a stop with no
+       overshoot. */
+    private static let entranceEasing = CAMediaTimingFunction(
+        controlPoints: 0.22, 1, 0.36, 1)
+
     private func animateEntrance(_ panel: NSPanel) {
         if let layer = panel.contentView?.layer {
             let centerX = Self.pillSize.width / 2
@@ -121,17 +126,16 @@ final class BrightnessHUD {
             from = CATransform3DScale(from, Self.entranceScale, Self.entranceScale, 1)
             from = CATransform3DTranslate(from, -centerX, -centerY, 0)
 
-            let scale = CASpringAnimation(keyPath: "transform")
+            let scale = CABasicAnimation(keyPath: "transform")
             scale.fromValue = NSValue(caTransform3D: from)
             scale.toValue = NSValue(caTransform3D: CATransform3DIdentity)
-            scale.stiffness = 400
-            scale.damping = 28
-            scale.duration = scale.settlingDuration
+            scale.duration = Self.entranceDuration
+            scale.timingFunction = Self.entranceEasing
             layer.add(scale, forKey: "entrance")
         }
         NSAnimationContext.runAnimationGroup { context in
             context.duration = Self.entranceDuration
-            context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            context.timingFunction = Self.entranceEasing
             panel.animator().alphaValue = 1
         }
     }
@@ -229,17 +233,16 @@ final class BrightnessHUD {
         return panel
     }
 
-    /* Calibrates the glass to the real HUD's material, captured over pure
-       white and pure black backdrops (≈219 and ≈51 vs .clear's 244/71).
-       The material is a private "glassBackground" filter on a backdrop
-       layer inside NSGlassEffectView; its face color matrix maps backdrop
-       luminance as out = black + (white − black) · in, and .clear ships
-       white 0.95 / black 0.2 plus a 10% white fill. Dropping the fill and
-       setting white 0.86 reproduces the native transfer exactly, and the
-       native indicator's much lighter blur (backdrop text stays readable
-       through it) needs the radius lowered from 6.25. Values must be set
-       through the layer's filter key path — mutating the filter object
-       directly never reaches the render server.
+    /* Tunes the glass material — anchored on the real HUD's transfer
+       (captured over pure white and pure black backdrops, ≈219 and ≈51 vs
+       .clear's 244/71), then deliberately pushed clearer and more liquid
+       than native. The material is a private "glassBackground" filter on a
+       backdrop layer inside NSGlassEffectView; its face color matrix maps
+       backdrop luminance as out = black + (white − black) · in, and .clear
+       ships white 0.95 / black 0.2 plus a 10% white fill (the native HUD
+       corresponds to white 0.86, fill dropped). The stock blur radius is
+       6.25. Values must be set through the layer's filter key path —
+       mutating the filter object directly never reaches the render server.
 
        The backdrop layer only exists a runloop turn or two after the panel
        first comes on screen, so retry briefly before falling back. If the
@@ -265,7 +268,7 @@ final class BrightnessHUD {
                     self?.tuneGlassMaterial(attempt: attempt + 1)
                 }
             } else {
-                glassView.tintColor = .black.withAlphaComponent(0.10)
+                glassView.tintColor = .black.withAlphaComponent(0.05)
             }
             return
         }
@@ -277,13 +280,43 @@ final class BrightnessHUD {
            silently dropped and the stock material would stay visible. */
         tuneEpsilonFlip.toggle()
         let epsilon = tuneEpsilonFlip ? 1e-6 : 0.0
+        /* Clearer than the native HUD's material: the face transfer
+           out = black + (white − black) · in is pushed toward identity
+           (native tuning was white 0.86 / stock black 0.2), so the backdrop
+           passes through nearly unchanged, and the blur is all but removed
+           so the refracted backdrop stays crisp instead of frosted. */
         backdrop.setValue(
-            0.86 + epsilon, forKeyPath: "filters.glassBackground.inputFaceColorMatrixWhite")
+            0.90 + epsilon, forKeyPath: "filters.glassBackground.inputFaceColorMatrixWhite")
+        backdrop.setValue(
+            0.06 + epsilon, forKeyPath: "filters.glassBackground.inputFaceColorMatrixBlack")
+        /* Legibility on light backdrops without smoking the whole face:
+           cap the luminance the backdrop can reach through the glass
+           (stock is 1 — uncapped). Only near-white content is pulled down
+           to the cap; everything below it keeps the clear transfer above. */
+        backdrop.setValue(
+            0.86 + epsilon, forKeyPath: "filters.glassBackground.inputFaceColorMatrixMaxLuma")
+        backdrop.setValue(
+            0.86 + epsilon,
+            forKeyPath: "filters.glassBackground.inputFaceColorMatrixMaxLumaSDR")
         backdrop.setValue(
             NSColor.white.withAlphaComponent(0).cgColor,
             forKeyPath: "filters.glassBackground.inputFaceColorMatrixFillColor")
         backdrop.setValue(
-            1.0 + epsilon, forKeyPath: "filters.glassBackground.inputBlurRadius")
+            0.25 + epsilon, forKeyPath: "filters.glassBackground.inputBlurRadius")
+        /* Deliberately past the stock .clear material for a more liquid
+           edge: the inner refraction (backdrop bending along the rim) ships
+           at amount -39 over a 20pt band — deepen and widen it — and the
+           material's own specular sheen ("key fill highlight") ships at
+           0.4. */
+        backdrop.setValue(
+            -60.0 + epsilon,
+            forKeyPath: "filters.glassBackground.inputInnerRefractionAmount")
+        backdrop.setValue(
+            26.0 + epsilon,
+            forKeyPath: "filters.glassBackground.inputInnerRefractionHeight")
+        backdrop.setValue(
+            0.65 + epsilon,
+            forKeyPath: "filters.glassBackground.inputKeyFillHighlightAmount")
     }
 
     private var tuneEpsilonFlip = false
@@ -363,28 +396,35 @@ final class BrightnessHUD {
                 ],
                 locations: [0.18, 0.42, 0.58, 0.82],
                 compositing: nil)
-            /* The glassiness of the native rim comes from a faint glow
-               bleeding ~5pt inward from the crisp line (edge scans show a
-               soft decay below it, not a hard stop). Three nested strokes
-               of decreasing alpha approximate that decay — additive, so
-               they sum near the edge and thin out inward. */
-            let glows = zip([4.0, 7.0, 10.0], [0.04, 0.03, 0.02]).map { width, alpha in
+            /* The glassiness of the rim comes from a faint glow bleeding
+               ~6pt inward from the crisp line (edge scans show a soft decay
+               below it, not a hard stop). Three nested strokes of decreasing
+               alpha approximate that decay — additive, so they sum near the
+               edge and thin out inward. Deliberately pushed past the native
+               levels: the glow never fully dies mid-height, so a faint sheen
+               carries through the sides and the corners read as one
+               continuous reflection instead of two separate highlights. */
+            let glows = zip([5.0, 8.0, 12.0], [0.08, 0.06, 0.04]).map { width, alpha in
                 line(
                     width: width,
                     colors: [
-                        .white.withAlphaComponent(alpha), clear, clear,
-                        .white.withAlphaComponent(alpha * 0.65),
+                        .white.withAlphaComponent(alpha),
+                        .white.withAlphaComponent(alpha * 0.25),
+                        .white.withAlphaComponent(alpha * 0.25),
+                        .white.withAlphaComponent(alpha * 0.7),
                     ],
-                    locations: [0, 0.32, 0.68, 1],
+                    locations: [0, 0.38, 0.62, 1],
                     compositing: "plusL")
             }
             let bright = line(
                 width: 2.0,
                 colors: [
-                    .white.withAlphaComponent(0.38), clear, clear,
-                    .white.withAlphaComponent(0.26),
+                    .white.withAlphaComponent(0.60),
+                    .white.withAlphaComponent(0.10),
+                    .white.withAlphaComponent(0.10),
+                    .white.withAlphaComponent(0.42),
                 ],
-                locations: [0, 0.32, 0.68, 1],
+                locations: [0, 0.38, 0.62, 1],
                 compositing: "plusL")
             layer?.addSublayer(dark)
             for glow in glows { layer?.addSublayer(glow) }
