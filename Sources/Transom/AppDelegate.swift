@@ -3,6 +3,7 @@ import AppKit
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let keyTap = BrightnessKeyTap()
     private let brightness = BrightnessController()
+    private let hud = BrightnessHUD()
     private var statusItem: NSStatusItem?
     private var settingsWindowController: SettingsWindowController?
     private var tapRetryTimer: Timer?
@@ -66,8 +67,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard brightness.canControl(display) else { return false }
         /* Key-ups are consumed (so the system never sees half a press) but
            only downs/autorepeats adjust. */
-        if isDown {
-            brightness.step(display, delta: direction.rawValue, fine: fine)
+        if isDown, let value = brightness.step(display, delta: direction.rawValue, fine: fine) {
+            /* Consumed presses get no native OSD; show our own, on the
+               display that actually changed. */
+            hud.show(value: value, on: display)
         }
         return true
     }

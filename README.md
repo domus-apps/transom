@@ -24,6 +24,15 @@ How a key press is handled:
      Apple-class displays (Studio Display, Pro Display XDR, many recent LG UltraFines), or
    - **DDC/CI** over `IOAVService` for everything else (Dell, BenQ, … — ordinary external
      monitors), the same channel the monitor's own OSD menu uses.
+4. A brightness HUD appears on the display that changed — a Liquid Glass replica of the native
+   macOS 26 indicator, since the native HUD only shows for presses macOS handles itself and the
+   `OSDManager` private API to summon it is a no-op on current macOS. Geometry, material, and
+   rim are all matched against window captures of the real indicator: the glass material's
+   backdrop filter is calibrated so the luminance transfer is pixel-identical (219/51 over
+   white/black) with the native low blur that keeps content readable through the pill, and the
+   specular rim (bright top/bottom line cross-blending into dark side lines through the corner
+   arcs) is drawn additively so it tracks the backdrop like the real one. Appears with the
+   native pop-in (fade + springy scale), casts no shadow — the native indicator doesn't either.
 
 The event **passes through untouched** (native behavior, including the on-screen HUD) when:
 
@@ -84,7 +93,8 @@ swift run                    # run once
 1. `swift run` → the menu bar icon (sun) appears.
 2. Move the cursor to an external display and press F1/F2 — that display's brightness changes
    (via DisplayServices for Apple-class displays, DDC/CI for the rest); the built-in panel's
-   does not.
+   does not. Transom's HUD appears at that display's top-right and fades out ~1.5s after the
+   last press.
 3. Move the cursor to the built-in display and press F1/F2 — native behavior, including the
    on-screen brightness HUD.
 4. Hold ⌥⇧ with F1/F2 — quarter-size fine steps.
@@ -118,6 +128,7 @@ Sources/Transom/
 ├── BrightnessController.swift # DisplayServices (private framework) get/set via dlopen
 ├── DDCPacket.swift            # DDC/CI packet framing + checksums (pure, testable)
 ├── DDCBrightness.swift        # DDC/CI over IOAVService for non-Apple external monitors
+├── BrightnessHUD.swift        # Native-replica Liquid Glass HUD on the display that changed
 ├── AppPreferences.swift       # App-level preferences (hide menu bar icon)
 └── SettingsWindow.swift       # Sidebar settings window
 ```
@@ -129,6 +140,4 @@ Recommended reading order: `BrightnessKeyTap.swift` → `AppDelegate.handleBrigh
 - **DDC/CI on Intel Macs** (`IOFramebuffer` I2C) — the current DDC path uses `IOAVService`,
   which only exists on Apple silicon; on Intel those displays fall through to the system
   default instead of going dead.
-- **On-screen brightness HUD** for redirected key presses (the native OSD only appears for
-  pass-through events).
 - **Release workflow** (GitHub Actions signing + notarization, same shape as Oriel's).
