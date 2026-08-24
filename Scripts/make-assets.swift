@@ -392,7 +392,7 @@ func drawBanner(_ cg: CGContext, icon: CGImage) {
     // icon is the complementary accent against it.
     linearGradient(
         cg, in: frame,
-        colors: [color(0x14213F), color(0x0A1128)],
+        colors: [color(0x33250E), color(0x191106)],
         from: CGPoint(x: canvas.midX, y: canvas.maxY), to: CGPoint(x: canvas.midX, y: canvas.minY)
     )
 
@@ -436,7 +436,7 @@ func drawSocialPreview(_ cg: CGContext, icon: CGImage) {
     // corners itself, so transparent corners would show through as white.
     linearGradient(
         cg, in: CGPath(rect: canvas, transform: nil),
-        colors: [color(0x16244A), color(0x0A1128)],
+        colors: [color(0x3B2C12), color(0x191106)],
         from: CGPoint(x: canvas.midX, y: canvas.maxY), to: CGPoint(x: canvas.midX, y: canvas.minY)
     )
 
