@@ -5,5 +5,23 @@
   <channel>
     <title>Transom</title>
     <link>https://github.com/domus-apps/transom</link>
+    <item>
+      <title>Transom v1.0.0</title>
+      <link>https://github.com/domus-apps/transom/releases/tag/v1.0.0</link>
+      <pubDate>Wed, 26 Aug 2026 12:46:13 +0000</pubDate>
+      <description><![CDATA[
+<ul>
+<li>Initial release: your brightness keys adjust whichever display the mouse is on — Apple displays natively, ordinary external monitors via DDC/CI.</li>
+<li>A custom Liquid Glass brightness HUD for redirected key presses, matching the system's own.</li>
+<li>Menu bar app with a hideable icon, launch at login, and Sparkle auto-updates.</li>
+</ul>      ]]></description>
+      <sparkle:version>1</sparkle:version>
+      <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+      <enclosure
+        url="https://github.com/domus-apps/transom/releases/download/v1.0.0/Transom.zip"
+        sparkle:edSignature="oawY0VjaDTEZ2vGY8tKNhxYYFbXVoZUACu/udrvBudsRXjbEtxwqqNMncGcPFkFdvO6DbJN0ZCTh8NJvqEnKDw==" length="2767163"
+        type="application/octet-stream"/>
+    </item>
   </channel>
 </rss>
