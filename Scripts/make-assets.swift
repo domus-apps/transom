@@ -314,7 +314,7 @@ func pillSun(_ cg: CGContext, center: CGPoint, core: CGFloat, rayInner: CGFloat,
 
 let pillLabelColor = NSColor(srgbRed: 0.97, green: 0.87, blue: 0.70, alpha: 1)
 let taglineColor = NSColor(srgbRed: 0.91, green: 0.81, blue: 0.65, alpha: 1)
-let tagline = "Cursor-aware display brightness for macOS"
+let tagline = "Cursor-aware brightness controller for macOS"
 
 enum PillSunStyle {
     case dim

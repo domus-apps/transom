@@ -1,9 +1,9 @@
 <p align="center">
-  <img src="Assets/banner.png" alt="Transom — Cursor-aware display brightness for macOS" />
+  <img src="Assets/banner.png" alt="Transom — Cursor-aware brightness controller for macOS" />
 </p>
 
 <p align="center">
-  A macOS menu bar app that makes the brightness keys adjust the display under the mouse cursor.<br />
+  A cursor-aware brightness controller for macOS — the brightness keys adjust the display under the mouse.<br />
   A single dependency-free Swift Package — builds with the <code>swift</code> CLI alone, no Xcode project required.
 </p>
 
