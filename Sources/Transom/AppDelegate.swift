@@ -4,6 +4,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let keyTap = BrightnessKeyTap()
     private let brightness = BrightnessController()
     private let hud = BrightnessHUD()
+    private let updater = UpdaterController()
     private var statusItem: NSStatusItem?
     private var settingsWindowController: SettingsWindowController?
     private var tapRetryTimer: Timer?
@@ -99,6 +100,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             title: "Settings…", action: #selector(openSettings), keyEquivalent: ",")
         settingsItem.target = self
         appMenu.addItem(settingsItem)
+        appMenu.addItem(updater.makeMenuItem())
         appMenu.addItem(.separator())
         appMenu.addItem(
             NSMenuItem(
@@ -175,10 +177,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
 
         let menu = NSMenu()
+        let version =
+            Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "dev"
+        let about = NSMenuItem(title: "Transom \(version)", action: nil, keyEquivalent: "")
+        about.isEnabled = false
+        menu.addItem(about)
+        menu.addItem(.separator())
         let settingsItem = NSMenuItem(
             title: "Settings…", action: #selector(openSettings), keyEquivalent: ",")
         settingsItem.target = self
         menu.addItem(settingsItem)
+        menu.addItem(updater.makeMenuItem())
         menu.addItem(.separator())
         menu.addItem(
             NSMenuItem(title: "Quit Transom", action: #selector(quit), keyEquivalent: "q"))
@@ -188,7 +197,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func openSettings() {
         if settingsWindowController == nil {
-            settingsWindowController = SettingsWindowController()
+            settingsWindowController = SettingsWindowController(updater: updater)
             if let window = settingsWindowController?.window {
                 NotificationCenter.default.addObserver(
                     forName: NSWindow.willCloseNotification, object: window, queue: .main

@@ -1,0 +1,11 @@
+# Changelog
+
+All notable changes to Transom are documented here. The release workflow publishes each version's section as the GitHub release notes and embeds it in the Sparkle appcast, so the in-app update dialog shows the same notes. A release fails early if its version has no section here.
+
+Keep each bullet on a single line: release notes render line breaks literally (both on GitHub and in the update dialog), so wrapped lines would break mid-sentence.
+
+## 1.0.0
+
+- Initial release: your brightness keys adjust whichever display the mouse is on — Apple displays natively, ordinary external monitors via DDC/CI.
+- A custom Liquid Glass brightness HUD for redirected key presses, matching the system's own.
+- Menu bar app with a hideable icon, launch at login, and Sparkle auto-updates.

@@ -26,9 +26,10 @@ enum SettingsPane: Int, CaseIterable {
    disabled by macOS itself while the window is not resizable-by-content,
    matching native settings windows). */
 final class SettingsWindowController: NSWindowController {
-    private let splitViewController = SettingsSplitViewController()
+    private let splitViewController: SettingsSplitViewController
 
-    init() {
+    init(updater: UpdaterController) {
+        splitViewController = SettingsSplitViewController(updater: updater)
         let window = NSWindow(contentViewController: splitViewController)
         window.styleMask = [.titled, .closable, .miniaturizable, .fullSizeContentView]
         /* A toolbar (even an empty one) is required for the full-height
@@ -64,10 +65,11 @@ final class SettingsSplitViewController: NSSplitViewController {
 
     private let sidebar = SettingsSidebarViewController()
     private let paneContainer = NSViewController()
-    private let generalPane = GeneralPaneViewController()
+    private let generalPane: GeneralPaneViewController
     private var currentPane: NSViewController?
 
-    init() {
+    init(updater: UpdaterController) {
+        generalPane = GeneralPaneViewController(updater: updater)
         super.init(nibName: nil, bundle: nil)
 
         paneContainer.view = NSView()
@@ -237,6 +239,18 @@ final class SettingsSidebarViewController: NSViewController, NSTableViewDataSour
 // MARK: - General pane
 
 final class GeneralPaneViewController: NSViewController {
+    private let updater: UpdaterController
+
+    init(updater: UpdaterController) {
+        self.updater = updater
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) is not supported")
+    }
+
     private lazy var launchAtLoginCheckbox = NSButton(
         checkboxWithTitle: "Launch at login", target: self,
         action: #selector(toggleLaunchAtLogin))
@@ -275,10 +289,24 @@ final class GeneralPaneViewController: NSViewController {
         hideNote.textColor = .secondaryLabelColor
         views.append(hideNote)
 
+        /* Updates. The menu bar icon (and its Check for Updates item) can be
+           hidden, so the settings window must offer the check too. */
+        let updateButton = updater.makeCheckButton()
+        views.append(updateButton)
+        let info = Bundle.main.infoDictionary
+        if let version = info?["CFBundleShortVersionString"] as? String {
+            let build = (info?["CFBundleVersion"] as? String).map { " (\($0))" } ?? ""
+            let versionNote = NSTextField(labelWithString: "Version \(version)\(build)")
+            versionNote.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
+            versionNote.textColor = .secondaryLabelColor
+            views.append(versionNote)
+        }
+
         let stack = NSStackView(views: views)
         stack.orientation = .vertical
         stack.alignment = .leading
         stack.spacing = 8
+        stack.setCustomSpacing(20, after: hideNote)
         stack.translatesAutoresizingMaskIntoConstraints = false
 
         let container = NSView()

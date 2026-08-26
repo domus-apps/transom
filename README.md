@@ -70,6 +70,39 @@ The app icon is compiled from the Icon Composer document at `Assets/AppIcon.icon
 `swift Scripts/make-assets.swift`), so on macOS 26+ the system renders it live with the Liquid
 Glass treatment — including the dark, clear, and tinted variants.
 
+### Release signing & notarization
+
+The release workflow signs and notarizes automatically when these repository secrets exist
+(without them, releases fall back to ad-hoc signing):
+
+| Secret | Value |
+| --- | --- |
+| `DEVELOPER_ID_P12` | Developer ID Application certificate + private key, exported as `.p12` from Keychain Access, then base64-encoded (`base64 -i cert.p12`) |
+| `DEVELOPER_ID_P12_PASSWORD` | Password chosen when exporting the `.p12` |
+| `NOTARY_KEY_P8` | Contents of an App Store Connect API key (`.p8`, Developer role) |
+| `NOTARY_KEY_ID` | The API key's Key ID |
+| `NOTARY_ISSUER_ID` | The API key's Issuer ID |
+| `SPARKLE_ED_PRIVATE_KEY` | Sparkle EdDSA private key (`generate_keys -x`) for signing auto-updates — must match `SUPublicEDKey` in `Scripts/Info.plist` |
+
+### Auto-updates (Sparkle)
+
+The app updates itself via [Sparkle](https://sparkle-project.org): it checks the feed at
+`appcast.xml` on `main` (see `SUFeedURL` in `Scripts/Info.plist`). After publishing a release,
+the workflow signs the notarized zip with the Sparkle private key and commits a new appcast
+entry — no manual steps.
+
+Release notes come from `CHANGELOG.md`: write a `## <version>` section before tagging (the
+release fails early without one). The workflow publishes that section as the GitHub release
+body and embeds it (rendered to HTML) in the appcast entry, so the update dialog shows the
+same notes. The EdDSA keypair lives in the maintainer's login keychain (back it
+up; losing it means existing installs can't verify future updates).
+
+Sparkle is Developer-ID-distribution only — a future App Store variant must compile out
+`UpdaterController.swift` and the Sparkle dependency (App Review 2.5.2 forbids self-updaters).
+
+Local distributable builds work too: `CODESIGN_IDENTITY="Developer ID Application" ./Scripts/bundle.sh`
+signs with hardened runtime + timestamp instead of ad-hoc.
+
 ## Development
 
 ```sh

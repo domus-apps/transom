@@ -13,31 +13,44 @@ mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp .build/release/Transom "$APP/Contents/MacOS/Transom"
 cp Scripts/Info.plist "$APP/Contents/Info.plist"
 
-# Compile the Icon Composer document into Assets.car when one exists —
-# no icon assets yet, so this block is a no-op until Assets/AppIcon.icon
-# is added (see Oriel's Scripts/make-assets.swift for the approach).
-if [[ -d Assets/AppIcon.icon ]]; then
-    ICONBUILD=$(mktemp -d)
-    xcrun actool Assets/AppIcon.icon --compile "$ICONBUILD" \
-        --platform macosx --minimum-deployment-target 26.0 \
-        --app-icon AppIcon --output-partial-info-plist "$ICONBUILD/partial.plist" \
-        --output-format human-readable-text --errors > /dev/null
-    cp "$ICONBUILD/Assets.car" "$APP/Contents/Resources/Assets.car"
-    cp "$ICONBUILD/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
-    rm -rf "$ICONBUILD"
-    /usr/libexec/PlistBuddy -c "Add :CFBundleIconFile string AppIcon" "$APP/Contents/Info.plist"
-    /usr/libexec/PlistBuddy -c "Add :CFBundleIconName string AppIcon" "$APP/Contents/Info.plist"
-fi
+# Embed Sparkle.framework (auto-update). The binary references it via
+# @rpath/../Frameworks (see Package.swift linkerSettings).
+SPARKLE=$(find .build/artifacts -type d -name Sparkle.framework -path "*macos*" | head -1)
+mkdir -p "$APP/Contents/Frameworks"
+cp -R "$SPARKLE" "$APP/Contents/Frameworks/"
+
+# Compile the Icon Composer document (Assets/AppIcon.icon) into Assets.car —
+# on macOS 26+ the system renders the icon's Liquid Glass appearance live,
+# including the dark/clear/tinted variants — plus a fallback AppIcon.icns
+# rendered from the same layers.
+ICONBUILD=$(mktemp -d)
+xcrun actool Assets/AppIcon.icon --compile "$ICONBUILD" \
+    --platform macosx --minimum-deployment-target 26.0 \
+    --app-icon AppIcon --output-partial-info-plist "$ICONBUILD/partial.plist" \
+    --output-format human-readable-text --errors > /dev/null
+cp "$ICONBUILD/Assets.car" "$APP/Contents/Resources/Assets.car"
+cp "$ICONBUILD/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
+rm -rf "$ICONBUILD"
 
 # With CODESIGN_IDENTITY set (e.g. "Developer ID Application"), produce a
 # distributable, notarization-ready signature (hardened runtime + timestamp).
 # Otherwise fall back to ad-hoc, which keeps the TCC (Accessibility) grant
 # stable across rebuilds on this machine.
 if [[ -n "${CODESIGN_IDENTITY:-}" ]]; then
-    codesign --force --options runtime --timestamp --sign "$CODESIGN_IDENTITY" "$APP"
+    SIGN=(codesign --force --options runtime --timestamp --sign "$CODESIGN_IDENTITY")
 else
-    codesign --force --sign - "$APP"
+    SIGN=(codesign --force --options runtime --sign -)
 fi
+
+# Sparkle's helpers must be signed individually, innermost first
+# (https://sparkle-project.org/documentation/sandboxing/#code-signing).
+FW="$APP/Contents/Frameworks/Sparkle.framework"
+"${SIGN[@]}" --preserve-metadata=entitlements "$FW/Versions/B/XPCServices/Downloader.xpc"
+"${SIGN[@]}" "$FW/Versions/B/XPCServices/Installer.xpc"
+"${SIGN[@]}" "$FW/Versions/B/Autoupdate"
+"${SIGN[@]}" "$FW/Versions/B/Updater.app"
+"${SIGN[@]}" "$FW"
+"${SIGN[@]}" "$APP"
 
 echo "Built $APP"
 echo "Run:  open $APP"
