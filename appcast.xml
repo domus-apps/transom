@@ -23,5 +23,22 @@
         sparkle:edSignature="oawY0VjaDTEZ2vGY8tKNhxYYFbXVoZUACu/udrvBudsRXjbEtxwqqNMncGcPFkFdvO6DbJN0ZCTh8NJvqEnKDw==" length="2767163"
         type="application/octet-stream"/>
     </item>
+    <item>
+      <title>Transom v1.1.0</title>
+      <link>https://github.com/domus-apps/transom/releases/tag/v1.1.0</link>
+      <pubDate>Wed, 26 Aug 2026 13:21:13 +0000</pubDate>
+      <description><![CDATA[
+<h3>Added</h3>
+<ul>
+<li>First-run onboarding that explains cursor-aware brightness and hosts the Accessibility permission ask — the launch-time system prompt is gone.</li>
+</ul>      ]]></description>
+      <sparkle:version>2</sparkle:version>
+      <sparkle:shortVersionString>1.1.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+      <enclosure
+        url="https://github.com/domus-apps/transom/releases/download/v1.1.0/Transom.zip"
+        sparkle:edSignature="dbaA2ZYNq3RLwiWm8lctxHgeqiMB3Zy058nJxF0jengya2nLigoKeNR8vjZO6pbNE8T+1LekuGMJC+KFOtCLBA==" length="2779524"
+        type="application/octet-stream"/>
+    </item>
   </channel>
 </rss>
