@@ -40,5 +40,21 @@
         sparkle:edSignature="dbaA2ZYNq3RLwiWm8lctxHgeqiMB3Zy058nJxF0jengya2nLigoKeNR8vjZO6pbNE8T+1LekuGMJC+KFOtCLBA==" length="2779524"
         type="application/octet-stream"/>
     </item>
+    <item>
+      <title>Transom v1.1.1</title>
+      <link>https://github.com/domus-apps/transom/releases/tag/v1.1.1</link>
+      <pubDate>Thu, 27 Aug 2026 02:00:52 +0000</pubDate>
+      <description><![CDATA[
+<ul>
+<li>Fixed: installing by COPYING the app (instead of Finder-moving it) left it running from Gatekeeper's translocated read-only path, which blocked Sparkle updates — the app now detects this at launch, clears the quarantine flag, and relaunches itself from its real location.</li>
+</ul>      ]]></description>
+      <sparkle:version>3</sparkle:version>
+      <sparkle:shortVersionString>1.1.1</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+      <enclosure
+        url="https://github.com/domus-apps/transom/releases/download/v1.1.1/Transom.zip"
+        sparkle:edSignature="+kPGQmKKk3Dn9Sf7bm02Vxn+00kBvQvdsmZCFnJxrngDZPpc7v+LnH25eX5XpHi8lMIk3RoJEK1YW9kCOXpNBw==" length="2782198"
+        type="application/octet-stream"/>
+    </item>
   </channel>
 </rss>
