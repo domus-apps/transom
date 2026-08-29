@@ -20,6 +20,14 @@ final class BrightnessKeyTap {
        half of a press. */
     var onKey: ((Direction, _ fine: Bool, _ isDown: Bool) -> Bool)?
 
+    /* Called for presses that arrive ONLY as brightness keycodes (144/145)
+       with no NX twin. macOS 26 delivers Bluetooth Magic Keyboard
+       brightness keys this way — and itself ignores the keycodes entirely
+       (no OSD, no adjustment, not even for the built-in panel), so unlike
+       onKey there is no native behavior to defer to: the handler must act
+       on whatever display is under the cursor. */
+    var onFallbackKey: ((Direction, _ fine: Bool, _ isDown: Bool) -> Void)?
+
     private var tap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
 
@@ -27,6 +35,18 @@ final class BrightnessKeyTap {
     private static let nxSubtypeAuxControl: Int16 = 8
     private static let nxKeyBrightnessUp = 2
     private static let nxKeyBrightnessDown = 3
+
+    /* The plain-key-event leg of a brightness press. */
+    private static let keycodeBrightnessUp: Int64 = 144
+    private static let keycodeBrightnessDown: Int64 = 145
+    /* Hardware that emits both legs (the built-in keyboard) sends them
+       within one press-repeat cycle; an NX event older than this belongs
+       to some earlier press. */
+    private static let auxTwinWindow: TimeInterval = 0.5
+    /* How long a keycode-leg press waits for its NX twin before concluding
+       it has none and handling the press itself. */
+    private static let fallbackDelay: TimeInterval = 0.06
+    private var lastAuxTimestamp: TimeInterval = 0
 
     var isRunning: Bool { tap != nil }
 
@@ -45,7 +65,9 @@ final class BrightnessKeyTap {
                 tap: .cgSessionEventTap,
                 place: .headInsertEventTap,
                 options: .defaultTap,
-                eventsOfInterest: CGEventMask(1 << Self.nxSysdefined.rawValue),
+                eventsOfInterest: CGEventMask(1 << Self.nxSysdefined.rawValue)
+                    | CGEventMask(1 << CGEventType.keyDown.rawValue)
+                    | CGEventMask(1 << CGEventType.keyUp.rawValue),
                 callback: callback,
                 userInfo: Unmanaged.passUnretained(self).toOpaque()
             )
@@ -75,6 +97,10 @@ final class BrightnessKeyTap {
             return Unmanaged.passUnretained(cgEvent)
         }
 
+        if type == .keyDown || type == .keyUp {
+            return handleBrightnessKeycode(type: type, cgEvent: cgEvent)
+        }
+
         guard
             type == Self.nxSysdefined,
             let event = NSEvent(cgEvent: cgEvent),
@@ -95,9 +121,45 @@ final class BrightnessKeyTap {
         default: return Unmanaged.passUnretained(cgEvent)
         }
 
+        /* Tells the keycode leg of this press (if the hardware sends one)
+           that the NX path owns it. */
+        lastAuxTimestamp = ProcessInfo.processInfo.systemUptime
+
         let fine = event.modifierFlags.contains([.option, .shift])
         let isDown = keyState == 0x0A
         let consumed = onKey?(direction, fine, isDown) ?? false
         return consumed ? nil : Unmanaged.passUnretained(cgEvent)
+    }
+
+    /* The keycode leg: brightness keycodes are consumed and handled after a
+       short wait for their NX twin — if the twin shows up (built-in
+       keyboard), the NX path above owns the press and the deferred handler
+       stands down. Consuming unconditionally is safe because macOS ignores
+       these keycodes outright. Every other key passes straight through. */
+    private func handleBrightnessKeycode(
+        type: CGEventType, cgEvent: CGEvent
+    ) -> Unmanaged<CGEvent>? {
+        let direction: Direction
+        switch cgEvent.getIntegerValueField(.keyboardEventKeycode) {
+        case Self.keycodeBrightnessUp: direction = .up
+        case Self.keycodeBrightnessDown: direction = .down
+        default: return Unmanaged.passUnretained(cgEvent)
+        }
+
+        let now = ProcessInfo.processInfo.systemUptime
+        /* Mid-hold on both-legs hardware: the NX repeats keep the timestamp
+           fresh, so the keycode repeats just pass through. */
+        guard now - lastAuxTimestamp > Self.auxTwinWindow else {
+            return Unmanaged.passUnretained(cgEvent)
+        }
+
+        let flags = cgEvent.flags
+        let fine = flags.contains(.maskAlternate) && flags.contains(.maskShift)
+        let isDown = type == .keyDown
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.fallbackDelay) { [weak self] in
+            guard let self, self.lastAuxTimestamp < now else { return }
+            self.onFallbackKey?(direction, fine, isDown)
+        }
+        return nil
     }
 }

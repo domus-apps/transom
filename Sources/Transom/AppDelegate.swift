@@ -66,6 +66,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         keyTap.onKey = { [weak self] direction, fine, isDown in
             self?.handleBrightnessKey(direction, fine: fine, isDown: isDown) ?? false
         }
+        keyTap.onFallbackKey = { [weak self] direction, fine, isDown in
+            self?.handleFallbackBrightnessKey(direction, fine: fine, isDown: isDown)
+        }
         if !keyTap.start() {
             /* Tap creation fails until Accessibility is granted; the grant
                doesn't notify, so poll until it sticks. */
@@ -100,6 +103,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             hud.show(value: value, on: display)
         }
         return true
+    }
+
+    /* Presses that reached the system only as brightness keycodes (macOS 26
+       delivers Bluetooth Magic Keyboard brightness this way): macOS ignores
+       them completely, so there is no native handling to defer to — adjust
+       whatever display is under the cursor, the built-in panel included. */
+    private func handleFallbackBrightnessKey(
+        _ direction: BrightnessKeyTap.Direction, fine: Bool, isDown: Bool
+    ) {
+        guard isDown, let display = CursorDisplay.displayIDUnderCursor() else { return }
+        if let value = brightness.step(display, delta: direction.rawValue, fine: fine) {
+            hud.show(value: value, on: display)
+        }
     }
 
     // MARK: - Menus & windows
