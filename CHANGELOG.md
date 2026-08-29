@@ -4,6 +4,13 @@ All notable changes to Transom are documented here. The release workflow publish
 
 Keep each bullet on a single line: release notes render line breaks literally (both on GitHub and in the update dialog), so wrapped lines would break mid-sentence.
 
+## 1.2.0
+
+### Fixed
+
+- Brightness keys on Bluetooth Magic Keyboards work again: macOS 26 delivers their presses only as brightness keycodes — with no system-defined event, which is the form macOS itself acts on, so the system showed no OSD and adjusted nothing either. Transom now handles the keycode form too, adjusting the display under the cursor (the built-in panel included, since there is no native handling to defer to).
+- Keyboards that send both event forms, like the built-in keyboard, are deduplicated — one press stays one brightness step.
+
 ## 1.1.1
 
 - Fixed: installing by COPYING the app (instead of Finder-moving it) left it running from Gatekeeper's translocated read-only path, which blocked Sparkle updates — the app now detects this at launch, clears the quarantine flag, and relaunches itself from its real location.
