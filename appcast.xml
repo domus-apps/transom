@@ -56,5 +56,23 @@
         sparkle:edSignature="+kPGQmKKk3Dn9Sf7bm02Vxn+00kBvQvdsmZCFnJxrngDZPpc7v+LnH25eX5XpHi8lMIk3RoJEK1YW9kCOXpNBw==" length="2782198"
         type="application/octet-stream"/>
     </item>
+    <item>
+      <title>Transom v1.2.0</title>
+      <link>https://github.com/domus-apps/transom/releases/tag/v1.2.0</link>
+      <pubDate>Sat, 29 Aug 2026 03:57:34 +0000</pubDate>
+      <description><![CDATA[
+<h3>Fixed</h3>
+<ul>
+<li>Brightness keys on Bluetooth Magic Keyboards work again: macOS 26 delivers their presses only as brightness keycodes — with no system-defined event, which is the form macOS itself acts on, so the system showed no OSD and adjusted nothing either. Transom now handles the keycode form too, adjusting the display under the cursor (the built-in panel included, since there is no native handling to defer to).</li>
+<li>Keyboards that send both event forms, like the built-in keyboard, are deduplicated — one press stays one brightness step.</li>
+</ul>      ]]></description>
+      <sparkle:version>4</sparkle:version>
+      <sparkle:shortVersionString>1.2.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+      <enclosure
+        url="https://github.com/domus-apps/transom/releases/download/v1.2.0/Transom.zip"
+        sparkle:edSignature="GJ2W81E1XERkrWimlHgQbrm9HyMxJziom7z3Yc15mj7ag8i0K7QOxBqXquRWfYdo6UnIndDmXjD3Ia9w0L6DDw==" length="2783826"
+        type="application/octet-stream"/>
+    </item>
   </channel>
 </rss>
