@@ -2,6 +2,13 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundleAlternateNames</key>
+	<array>
+		<string>트랜섬</string>
+		<string>트랜솜</string>
+		<string>밝기</string>
+		<string>brightness</string>
+	</array>
 	<key>CFBundleExecutable</key>
 	<string>Transom</string>
 	<key>CFBundleIconFile</key>
