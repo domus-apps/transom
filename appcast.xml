@@ -74,5 +74,22 @@
         sparkle:edSignature="GJ2W81E1XERkrWimlHgQbrm9HyMxJziom7z3Yc15mj7ag8i0K7QOxBqXquRWfYdo6UnIndDmXjD3Ia9w0L6DDw==" length="2783826"
         type="application/octet-stream"/>
     </item>
+    <item>
+      <title>Transom v1.2.1</title>
+      <link>https://github.com/domus-apps/transom/releases/tag/v1.2.1</link>
+      <pubDate>Sun, 30 Aug 2026 01:38:41 +0000</pubDate>
+      <description><![CDATA[
+<h3>Added</h3>
+<ul>
+<li>Spotlight now finds the app by its Korean name and by what it does — 트랜섬, 트랜솜, 밝기, and brightness all match.</li>
+</ul>      ]]></description>
+      <sparkle:version>5</sparkle:version>
+      <sparkle:shortVersionString>1.2.1</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+      <enclosure
+        url="https://github.com/domus-apps/transom/releases/download/v1.2.1/Transom.zip"
+        sparkle:edSignature="hAg6+5wyOl1IYE97ofUqPO6tw5qL/Lj/Wh/pK9VbwQNYvJF3ORS7hlgPXXxJps+v5Ph7T9Sa1AJNFghSt5iXCA==" length="2783907"
+        type="application/octet-stream"/>
+    </item>
   </channel>
 </rss>
