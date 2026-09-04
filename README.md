@@ -174,3 +174,7 @@ Recommended reading order: `BrightnessKeyTap.swift` → `AppDelegate.handleBrigh
   which only exists on Apple silicon; on Intel those displays fall through to the system
   default instead of going dead.
 - **Release workflow** (GitHub Actions signing + notarization, same shape as Oriel's).
+
+## License
+
+MIT, see [LICENSE](LICENSE). Bundled third-party software and its licenses are listed in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
