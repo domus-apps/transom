@@ -14,7 +14,7 @@ Keep each bullet on a single line: release notes render line breaks literally (b
 
 ### Fixed
 
-- Brightness keys on Bluetooth Magic Keyboards work again: macOS 26 delivers their presses only as brightness keycodes, with no system-defined event (the form macOS itself acts on), so the system showed no OSD and adjusted nothing either. Transom now handles the keycode form too, adjusting the display under the cursor (the built-in panel included, since there is no native handling to defer to).
+- Brightness keys on Bluetooth Magic Keyboards work again. macOS 26 delivers their presses only as brightness keycodes, with no system-defined event (the form macOS itself acts on), so the system showed no OSD and adjusted nothing either. Transom now handles the keycode form too, adjusting the display under the cursor (the built-in panel included, since there is no native handling to defer to).
 - Keyboards that send both event forms, like the built-in keyboard, are deduplicated, so one press stays one brightness step.
 
 ## 1.1.1
@@ -25,7 +25,7 @@ Keep each bullet on a single line: release notes render line breaks literally (b
 
 ### Added
 
-- First-run onboarding that explains cursor-aware brightness and hosts the Accessibility permission ask; the launch-time system prompt is gone.
+- First-run onboarding that explains cursor-aware brightness and hosts the Accessibility permission ask. The launch-time system prompt is gone.
 
 ## 1.0.0
 

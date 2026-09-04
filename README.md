@@ -24,7 +24,7 @@ How a key press is handled:
      Apple-class displays (Studio Display, Pro Display XDR, many recent LG UltraFines), or
    - **DDC/CI** over `IOAVService` for everything else (Dell, BenQ, …, ordinary external
      monitors), the same channel the monitor's own OSD menu uses.
-4. A brightness HUD appears on the display that changed: a Liquid Glass replica of the native
+4. A brightness HUD appears on the display that changed, a Liquid Glass replica of the native
    macOS 26 indicator, since the native HUD only shows for presses macOS handles itself and the
    `OSDManager` private API to summon it is a no-op on current macOS. Geometry, material, and
    rim are all matched against window captures of the real indicator: the glass material's
@@ -82,7 +82,7 @@ The release workflow signs and notarizes automatically when these repository sec
 | `NOTARY_KEY_P8` | Contents of an App Store Connect API key (`.p8`, Developer role) |
 | `NOTARY_KEY_ID` | The API key's Key ID |
 | `NOTARY_ISSUER_ID` | The API key's Issuer ID |
-| `SPARKLE_ED_PRIVATE_KEY` | Sparkle EdDSA private key (`generate_keys -x`) for signing auto-updates; must match `SUPublicEDKey` in `Scripts/Info.plist` |
+| `SPARKLE_ED_PRIVATE_KEY` | Sparkle EdDSA private key (`generate_keys -x`) for signing auto-updates, must match `SUPublicEDKey` in `Scripts/Info.plist` |
 
 ### Auto-updates (Sparkle)
 
@@ -124,15 +124,15 @@ swift run                    # run once
 ### Manual test checklist
 
 1. `swift run` → the menu bar icon (sun) appears.
-2. Move the cursor to an external display and press F1/F2: that display's brightness changes
+2. Move the cursor to an external display and press F1/F2. That display's brightness changes
    (via DisplayServices for Apple-class displays, DDC/CI for the rest); the built-in panel's
    does not. Transom's HUD appears at that display's top-right and fades out ~1.5s after the
    last press.
-3. Move the cursor to the built-in display and press F1/F2: native behavior, including the
+3. Move the cursor to the built-in display and press F1/F2. Native behavior, including the
    on-screen brightness HUD.
-4. Hold ⌥⇧ with F1/F2: quarter-size fine steps.
-5. Hold F2 down: autorepeat ramps the brightness smoothly.
-6. Check Control Center → Display: its slider tracks Transom's changes (Apple-class displays
+4. Hold ⌥⇧ with F1/F2 for quarter-size fine steps.
+5. Hold F2 down and autorepeat ramps the brightness smoothly.
+6. Check Control Center → Display. Its slider tracks Transom's changes (Apple-class displays
    only; DDC monitors have no system slider).
 7. Change a DDC monitor's brightness from its physical buttons, wait ~10s, then press F1/F2:
    Transom picks up from the new value instead of snapping back.
