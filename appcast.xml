@@ -91,5 +91,40 @@
         sparkle:edSignature="hAg6+5wyOl1IYE97ofUqPO6tw5qL/Lj/Wh/pK9VbwQNYvJF3ORS7hlgPXXxJps+v5Ph7T9Sa1AJNFghSt5iXCA==" length="2783907"
         type="application/octet-stream"/>
     </item>
+    <item>
+      <title>Transom v1.2.2</title>
+      <link>https://github.com/domus-apps/transom/releases/tag/v1.2.2</link>
+      <pubDate>Mon, 07 Sep 2026 07:14:21 +0000</pubDate>
+      <description xml:lang="en"><![CDATA[
+<h2>1.2.2</h2>
+<h3>Fixed</h3>
+<ul>
+<li>Fixed steady processor use that began once Settings had been opened and went on after the window was closed.</li>
+</ul>
+<h2>1.2.1</h2>
+<h3>Added</h3>
+<ul>
+<li>Spotlight now finds the app by its Korean name and by what it does: 트랜섬, 트랜솜, 밝기, and brightness all match.</li>
+</ul>
+<h2>1.2.0</h2>
+<h3>Fixed</h3>
+<ul>
+<li>Brightness keys on Bluetooth Magic Keyboards work again. macOS 26 delivers their presses only as brightness keycodes, with no system-defined event (the form macOS itself acts on), so the system showed no OSD and adjusted nothing either. Transom now handles the keycode form too, adjusting the display under the cursor (the built-in panel included, since there is no native handling to defer to).</li>
+<li>Keyboards that send both event forms, like the built-in keyboard, are deduplicated, so one press stays one brightness step.</li>
+</ul>      ]]></description>
+      <description xml:lang="ko"><![CDATA[
+<h2>1.2.2</h2>
+<h3>수정</h3>
+<ul>
+<li>설정 창을 한 번 열면 창을 닫은 뒤에도 CPU를 계속 사용하던 문제를 고쳤습니다.</li>
+</ul>      ]]></description>
+      <sparkle:version>6</sparkle:version>
+      <sparkle:shortVersionString>1.2.2</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+      <enclosure
+        url="https://github.com/domus-apps/transom/releases/download/v1.2.2/Transom.zip"
+        sparkle:edSignature="IMnA4MWXRGjDBs7jJJeRo1n5uAXap6KQau34/da3Oh8OVvj8dWu6CBCg3mqLy8iGkfSBBgLZb7rEkG3+71ruAQ==" length="2783944"
+        type="application/octet-stream"/>
+    </item>
   </channel>
 </rss>
