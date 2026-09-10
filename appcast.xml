@@ -126,5 +126,44 @@
         sparkle:edSignature="IMnA4MWXRGjDBs7jJJeRo1n5uAXap6KQau34/da3Oh8OVvj8dWu6CBCg3mqLy8iGkfSBBgLZb7rEkG3+71ruAQ==" length="2783944"
         type="application/octet-stream"/>
     </item>
+    <item>
+      <title>Transom v1.2.3</title>
+      <link>https://github.com/domus-apps/transom/releases/tag/v1.2.3</link>
+      <pubDate>Thu, 10 Sep 2026 05:23:24 +0000</pubDate>
+      <description xml:lang="en"><![CDATA[
+<h2>1.2.3</h2>
+<h3>Fixed</h3>
+<ul>
+<li>Closing Settings or the welcome window now returns you to the app you were using, so other apps' shortcuts keep working right away.</li>
+</ul>
+<h2>1.2.2</h2>
+<h3>Fixed</h3>
+<ul>
+<li>Fixed steady processor use that began once Settings had been opened and went on after the window was closed.</li>
+</ul>
+<h2>1.2.1</h2>
+<h3>Added</h3>
+<ul>
+<li>Spotlight now finds the app by its Korean name and by what it does: 트랜섬, 트랜솜, 밝기, and brightness all match.</li>
+</ul>      ]]></description>
+      <description xml:lang="ko"><![CDATA[
+<h2>1.2.3</h2>
+<h3>수정</h3>
+<ul>
+<li>설정 창이나 시작 안내 창을 닫으면 이전에 쓰던 앱으로 바로 돌아가, 다른 앱의 단축키가 곧바로 동작합니다.</li>
+</ul>
+<h2>1.2.2</h2>
+<h3>수정</h3>
+<ul>
+<li>설정 창을 한 번 열면 창을 닫은 뒤에도 CPU를 계속 사용하던 문제를 고쳤습니다.</li>
+</ul>      ]]></description>
+      <sparkle:version>7</sparkle:version>
+      <sparkle:shortVersionString>1.2.3</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+      <enclosure
+        url="https://github.com/domus-apps/transom/releases/download/v1.2.3/Transom.zip"
+        sparkle:edSignature="x5cy98beDct1bdXgCDQQjQMOcG2AXP0CpHDbqST9Srs4eT67/KRP3ZQ57kt32aV9j0EPfA+0fTdVGhH7ffoDBA==" length="2784888"
+        type="application/octet-stream"/>
+    </item>
   </channel>
 </rss>
