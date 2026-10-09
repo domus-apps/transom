@@ -4,6 +4,12 @@ All notable changes to Transom are documented here. The release workflow publish
 
 Keep each bullet on a single line: release notes render line breaks literally (both on GitHub and in the update dialog), so wrapped lines would break mid-sentence.
 
+## 1.2.6
+
+### Fixed
+
+- Touch ID could fail to turn on in the App Store's purchase sheet when the sheet sat under the spot where the brightness indicator appears.
+
 ## 1.2.5
 
 ### Fixed

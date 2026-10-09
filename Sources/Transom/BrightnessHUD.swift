@@ -54,6 +54,18 @@ final class BrightnessHUD {
                 self?.tuneGlassMaterial()
             }
         }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+            self?.parkIfHidden()
+        }
+        /* A display change can pull the parked panel back onto a screen. */
+        NotificationCenter.default.addObserver(
+            forName: NSApplication.didChangeScreenParametersNotification, object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            DispatchQueue.main.async { [weak self] in
+                self?.parkIfHidden()
+            }
+        }
     }
 
     func show(value: Float, on display: CGDirectDisplayID) {
@@ -147,7 +159,24 @@ final class BrightnessHUD {
         NSAnimationContext.runAnimationGroup { context in
             context.duration = Self.fadeDuration
             panel.animator().alphaValue = Self.hiddenAlpha
+        } completionHandler: { [weak self] in
+            self?.parkIfHidden()
         }
+    }
+
+    /* The hidden panel waits off every screen. Left where it was shown, it
+       would sit invisibly above every app, and macOS treats that as
+       covering whatever is below: the App Store's payment sheet sees itself
+       as occluded and won't turn on Touch ID (measured with Atrium's
+       switcher panel, 2026-10-09). Moving keeps the window attached, so the
+       tuned glass survives; only ordering out would reset it. A press that
+       arrived during the fade has already set the alpha back to 1, so the
+       panel stays put. */
+    private func parkIfHidden() {
+        guard let panel, panel.alphaValue <= Self.hiddenAlpha else { return }
+        let screens = NSScreen.screens.reduce(NSRect.null) { $0.union($1.frame) }
+        guard !screens.isNull else { return }
+        panel.setFrameOrigin(NSPoint(x: screens.maxX + 100, y: screens.maxY + 100))
     }
 
     private func makePanel() -> NSPanel {
