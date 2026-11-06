@@ -331,6 +331,8 @@ final class GeneralPaneViewController: NSViewController {
             versionNote.textColor = .secondaryLabelColor
             views.append(versionNote)
         }
+        views.append(
+            NSButton(title: "Domus Website", target: self, action: #selector(openWebsite)))
 
         let stack = NSStackView(views: views)
         stack.orientation = .vertical
@@ -349,6 +351,10 @@ final class GeneralPaneViewController: NSViewController {
                 lessThanOrEqualTo: container.trailingAnchor, constant: -24),
         ])
         view = container
+    }
+
+    @objc private func openWebsite() {
+        NSWorkspace.shared.open(websiteURL)
     }
 
     @objc private func toggleHideMenuBarIcon() {

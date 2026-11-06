@@ -1,6 +1,18 @@
 import AppKit
 import ServiceManagement
 
+/* domus-apps.com in the user's language: the site's root, or /kr for
+   Korean. Of the system's preferred languages, the first the site has
+   wins (Japanese then Korean gets Korean) — even though Transom itself
+   is English only.
+   Without forPreferences the call answered "en" even with Korean first. */
+var websiteURL: URL {
+    let language = Bundle.preferredLocalizations(
+        from: ["en", "ko"], forPreferences: Locale.preferredLanguages
+    ).first
+    return URL(string: language == "ko" ? "https://domus-apps.com/kr" : "https://domus-apps.com/")!
+}
+
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let keyTap = BrightnessKeyTap()
     private let brightness = BrightnessController()
@@ -327,11 +339,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         settingsItem.target = self
         menu.addItem(settingsItem)
         menu.addItem(updater.makeMenuItem())
+        menu.addItem(makeWebsiteItem())
         menu.addItem(.separator())
         menu.addItem(
             NSMenuItem(title: "Quit Transom", action: #selector(quit), keyEquivalent: "q"))
         item.menu = menu
         statusItem = item
+    }
+
+    private func makeWebsiteItem() -> NSMenuItem {
+        let item = NSMenuItem(
+            title: "Domus Website", action: #selector(openWebsite), keyEquivalent: "")
+        item.target = self
+        return item
+    }
+
+    @objc private func openWebsite() {
+        NSWorkspace.shared.open(websiteURL)
     }
 
     @objc private func openSettings() {
